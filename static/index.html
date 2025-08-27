@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot - Gerenciador de Conhecimento</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-robot"></i> WhatsApp AI Bot</h1>
+                <p>Gerenciador de Base de Conhecimento</p>
+            </div>
+            <div class="stats-cards" id="stats-cards">
+                <div class="stat-card">
+                    <i class="fas fa-database"></i>
+                    <div>
+                        <span class="stat-number" id="total-entries">0</span>
+                        <span class="stat-label">Entradas</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-tags"></i>
+                    <div>
+                        <span class="stat-number" id="total-categories">0</span>
+                        <span class="stat-label">Categorias</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-button active" data-tab="list">
+                <i class="fas fa-list"></i> Listar Conhecimento
+            </button>
+            <button class="tab-button" data-tab="add">
+                <i class="fas fa-plus"></i> Adicionar
+            </button>
+            <button class="tab-button" data-tab="search">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            <button class="tab-button" data-tab="import">
+                <i class="fas fa-upload"></i> Importar
+            </button>
+        </nav>
+
+        <!-- Tab Contents -->
+        <main class="main-content">
+            <!-- Lista de Conhecimento -->
+            <div class="tab-content active" id="list-tab">
+                <div class="section-header">
+                    <h2>Base de Conhecimento</h2>
+                    <div class="filters">
+                        <select id="category-filter">
+                            <option value="">Todas as Categorias</option>
+                        </select>
+                        <input type="text" id="quick-search" placeholder="Busca rápida...">
+                    </div>
+                </div>
+                
+                <div class="knowledge-grid" id="knowledge-grid">
+                    <!-- Itens serão inseridos aqui via JavaScript -->
+                </div>
+                
+                <div class="pagination">
+                    <button id="prev-page">Anterior</button>
+                    <span id="page-info">Página 1</span>
+                    <button id="next-page">Próxima</button>
+                </div>
+            </div>
+
+            <!-- Adicionar Conhecimento -->
+            <div class="tab-content" id="add-tab">
+                <div class="section-header">
+                    <h2>Adicionar Conhecimento</h2>
+                </div>
+                
+                <form id="knowledge-form" class="knowledge-form">
+                    <div class="form-group">
+                        <label for="title">Título *</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="category">Categoria</label>
+                        <input type="text" id="category" name="category" list="categories-list">
+                        <datalist id="categories-list"></datalist>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tags">Tags (separadas por vírgula)</label>
+                        <input type="text" id="tags" name="tags" placeholder="ajuda, login, senha">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="content">Conteúdo *</label>
+                        <textarea id="content" name="content" rows="10" required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" id="clear-form">Limpar</button>
+                        <button type="submit">Salvar</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Buscar Conhecimento -->
+            <div class="tab-content" id="search-tab">
+                <div class="section-header">
+                    <h2>Buscar na Base de Conhecimento</h2>
+                </div>
+                
+                <div class="search-form">
+                    <div class="search-input-group">
+                        <input type="text" id="search-query" placeholder="Digite sua busca...">
+                        <select id="search-type">
+                            <option value="hybrid">Busca Híbrida</option>
+                            <option value="text">Busca Textual</option>
+                            <option value="semantic">Busca Semântica</option>
+                        </select>
+                        <select id="search-category">
+                            <option value="">Todas as Categorias</option>
+                        </select>
+                        <button id="search-btn">Buscar</button>
+                    </div>
+                </div>
+                
+                <div class="search-results" id="search-results">
+                    <!-- Resultados da busca -->
+                </div>
+            </div>
+
+            <!-- Importar Dados -->
+            <div class="tab-content" id="import-tab">
+                <div class="section-header">
+                    <h2>Importar Dados</h2>
+                </div>
+                
+                <div class="import-section">
+                    <div class="import-card">
+                        <i class="fas fa-file-import"></i>
+                        <h3>Importar Arquivos RAG</h3>
+                        <p>Importe arquivos TXT/PDF existentes para a base de conhecimento</p>
+                        <button id="import-rag-btn" class="import-btn">Importar Arquivos RAG</button>
+                    </div>
+                </div>
+                
+                <div class="import-results" id="import-results">
+                    <!-- Resultados da importação -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Editar/Visualizar -->
+    <div class="modal" id="knowledge-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Editar Conhecimento</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="modal-form">
+                    <input type="hidden" id="modal-id">
+                    <div class="form-group">
+                        <label for="modal-title-input">Título *</label>
+                        <input type="text" id="modal-title-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-category">Categoria</label>
+                        <input type="text" id="modal-category">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-tags">Tags</label>
+                        <input type="text" id="modal-tags">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-content">Conteúdo *</label>
+                        <textarea id="modal-content" rows="10" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-delete" class="btn-danger">Excluir</button>
+                <button id="modal-cancel">Cancelar</button>
+                <button id="modal-save">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast" id="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

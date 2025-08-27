@@ -16,15 +16,17 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     command: ["postgres", "-c", "max_connections=1000"]
     restart: always
     ports:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=whatsapp_bot
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     expose:
       - 5432
 
@@ -46,6 +48,7 @@ services:
     env_file:
       - .env
     depends_on:
+      - postgres
       - evolution-api
       - redis
     restart: always

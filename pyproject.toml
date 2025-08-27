@@ -1,0 +1,79 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "whatsapp-ai-bot"
+version = "1.0.0"
+description = "Bot inteligente para WhatsApp com sistema de conhecimento PostgreSQL"
+authors = ["Seu Nome <seu.email@exemplo.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.115.12"
+uvicorn = "^0.34.0"
+sqlalchemy = "^2.0.40"
+psycopg2-binary = "^2.9.9"
+pgvector = "^0.3.8"
+alembic = "^1.14.0"
+langchain = "^0.3.21"
+langchain-openai = "^0.3.11"
+langchain-community = "^0.3.20"
+langchain-chroma = "^0.2.2"
+openai = "^1.69.0"
+redis = "^5.2.1"
+python-dotenv = "^1.1.0"
+pydantic = "^2.11.1"
+pydantic-settings = "^2.8.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.21.0"
+black = "^24.0.0"
+isort = "^5.12.0"
+flake8 = "^6.0.0"
+mypy = "^1.8.0"
+
+[tool.poetry.scripts]
+migrate = "scripts.migrate_to_postgres:main"
+setup-db = "scripts.setup_database:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

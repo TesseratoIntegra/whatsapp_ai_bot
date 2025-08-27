@@ -1,3 +1,5 @@
+"""Vector store legado usando ChromaDB (para compatibilidade)."""
+
 import os
 import shutil
 
@@ -6,17 +8,23 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 
-from config import RAG_FILES_DIR, VECTOR_STORE_PATH
+from .config import settings
 
 
 def load_documents():
+    """
+    Carrega documentos dos arquivos RAG (txt/pdf).
+    
+    Returns:
+        Lista de documentos carregados
+    """
     docs = []
-    processed_dir = os.path.join(RAG_FILES_DIR, 'processed')
+    processed_dir = os.path.join(settings.RAG_FILES_DIR, 'processed')
     os.makedirs(processed_dir, exist_ok=True)
 
     files = [
-        os.path.join(RAG_FILES_DIR, f)
-        for f in os.listdir(RAG_FILES_DIR)
+        os.path.join(settings.RAG_FILES_DIR, f)
+        for f in os.listdir(settings.RAG_FILES_DIR)
         if f.endswith('.pdf') or f.endswith('.txt')
     ]
 
@@ -28,7 +36,14 @@ def load_documents():
 
     return docs
 
+
 def get_vectorstore():
+    """
+    Obtém vector store ChromaDB (legado).
+    
+    Returns:
+        Instância do ChromaDB
+    """
     docs = load_documents()
     if docs:
         text_splitter = RecursiveCharacterTextSplitter(
@@ -39,9 +54,9 @@ def get_vectorstore():
         return Chroma.from_documents(
             documents=splits,
             embedding=OpenAIEmbeddings(),
-            persist_directory=VECTOR_STORE_PATH,
+            persist_directory=settings.VECTOR_STORE_PATH,
         )
     return Chroma(
         embedding_function=OpenAIEmbeddings(),
-        persist_directory=VECTOR_STORE_PATH,
+        persist_directory=settings.VECTOR_STORE_PATH,
     )
