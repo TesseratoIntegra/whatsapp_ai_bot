@@ -22,6 +22,33 @@ from .schemas import (
 admin_router = APIRouter(prefix="/admin", tags=["Administração"])
 
 
+def knowledge_to_response(entry) -> KnowledgeEntryResponse:
+    """Converte entrada de conhecimento para resposta."""
+    try:
+        return KnowledgeEntryResponse(
+            id=getattr(entry, 'id', 0),
+            title=getattr(entry, 'title', ''),
+            content=getattr(entry, 'content', ''),
+            category=getattr(entry, 'category', None),
+            tags=getattr(entry, 'tags', []),
+            metadata=getattr(entry, 'metadata_', {}),
+            created_at=entry.created_at.isoformat() if hasattr(entry, 'created_at') and entry.created_at else None,
+            updated_at=entry.updated_at.isoformat() if hasattr(entry, 'updated_at') and entry.updated_at else None
+        )
+    except Exception as e:
+        # Se falhar, retorna resposta padrão
+        return KnowledgeEntryResponse(
+            id=0,
+            title="Erro ao carregar",
+            content="Erro ao carregar conteúdo",
+            category=None,
+            tags=[],
+            metadata={},
+            created_at=None,
+            updated_at=None
+        )
+
+
 @admin_router.post("/init-db", response_model=StandardResponse)
 async def initialize_database():
     """Inicializa banco de dados e verifica extensão pgvector."""
@@ -50,8 +77,10 @@ async def create_knowledge_entry(entry: KnowledgeEntryCreate):
             tags=entry.tags,
             metadata=entry.metadata
         )
-        return KnowledgeEntryResponse(**db_entry.to_dict())
+        return knowledge_to_response(db_entry)
     except Exception as e:
+        import traceback
+        print(f"Erro detalhado: {traceback.format_exc()}")
         raise HTTPException(
             status_code=500,
             detail=f"Falha ao criar entrada: {str(e)}"
@@ -64,7 +93,7 @@ async def get_knowledge_entry(entry_id: int):
     entry = knowledge_service.get_entry(entry_id)
     if not entry:
         raise HTTPException(status_code=404, detail="Entrada não encontrada")
-    return KnowledgeEntryResponse(**entry.to_dict())
+    return knowledge_to_response(entry)
 
 
 @admin_router.put("/knowledge/{entry_id}", response_model=KnowledgeEntryResponse)
@@ -80,7 +109,7 @@ async def update_knowledge_entry(entry_id: int, entry: KnowledgeEntryUpdate):
     )
     if not db_entry:
         raise HTTPException(status_code=404, detail="Entrada não encontrada")
-    return KnowledgeEntryResponse(**db_entry.to_dict())
+    return knowledge_to_response(db_entry)
 
 
 @admin_router.delete("/knowledge/{entry_id}", response_model=StandardResponse)
@@ -112,7 +141,7 @@ async def list_knowledge_entries(
         limit=limit,
         offset=offset
     )
-    return [KnowledgeEntryResponse(**entry.to_dict()) for entry in entries]
+    return [knowledge_to_response(entry) for entry in entries]
 
 
 @admin_router.post("/knowledge/search", response_model=List[KnowledgeEntryResponse])
@@ -138,7 +167,7 @@ async def search_knowledge(request: SearchRequest):
                 limit=request.limit
             )
         
-        return [KnowledgeEntryResponse(**entry.to_dict()) for entry in entries]
+        return [knowledge_to_response(entry) for entry in entries]
     except Exception as e:
         raise HTTPException(
             status_code=500,

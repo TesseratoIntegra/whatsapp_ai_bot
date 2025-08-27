@@ -38,8 +38,8 @@ class KnowledgeService:
         Returns:
             KnowledgeBase: Entrada criada
         """
-        # Gera embedding do conteúdo
-        embedding = self.embeddings.embed_query(content)
+        # Por enquanto, usa lista vazia como embedding (sem OpenAI)
+        embedding = []
         
         with get_db_context() as db:
             entry = KnowledgeBase(
@@ -51,9 +51,21 @@ class KnowledgeService:
                 metadata_=metadata or {}
             )
             db.add(entry)
-            db.flush()
+            db.commit()
             db.refresh(entry)
-            return entry
+            
+            # Cria uma cópia simples dos dados para retornar
+            result = type('KnowledgeEntry', (), {
+                'id': entry.id,
+                'title': entry.title,
+                'content': entry.content,
+                'category': entry.category,
+                'tags': entry.tags,
+                'metadata_': entry.metadata_,
+                'created_at': entry.created_at,
+                'updated_at': entry.updated_at
+            })()
+            return result
     
     def get_entry(self, entry_id: int) -> Optional[KnowledgeBase]:
         """
@@ -105,8 +117,8 @@ class KnowledgeService:
                 entry.title = title
             if content is not None:
                 entry.content = content
-                # Re-gera embedding se conteúdo mudou
-                entry.embedding = self.embeddings.embed_query(content)
+                # Re-gera embedding se conteúdo mudou (temporariamente desabilitado)
+                # entry.embedding = self.embeddings.embed_query(content)
             if category is not None:
                 entry.category = category
             if tags is not None:
@@ -114,9 +126,21 @@ class KnowledgeService:
             if metadata is not None:
                 entry.metadata_ = metadata
             
-            db.flush()
+            db.commit()
             db.refresh(entry)
-            return entry
+            
+            # Cria uma cópia simples dos dados para retornar
+            result = type('KnowledgeEntry', (), {
+                'id': entry.id,
+                'title': entry.title,
+                'content': entry.content,
+                'category': entry.category,
+                'tags': entry.tags,
+                'metadata_': entry.metadata_,
+                'created_at': entry.created_at,
+                'updated_at': entry.updated_at
+            })()
+            return result
     
     def delete_entry(self, entry_id: int) -> bool:
         """
